@@ -30,7 +30,7 @@ export function loadAndIndexAddresses() {
     console.log('Loading address data...');
     
     // Path: From 'dist' (where code runs), go up to 'backend', then into 'data'
-    const dataPath = path.join(__dirname, '..', 'data', 'adresses.json');
+    const dataPath = path.join(__dirname, '../..', 'data', 'adresses.json');
     
     const rawData = fs.readFileSync(dataPath, 'utf-8');
     const addresses: Address[] = JSON.parse(rawData);

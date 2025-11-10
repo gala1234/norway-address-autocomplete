@@ -1,11 +1,11 @@
-import './App.css' // Borraremos esto también
+import { AddressSearch } from './components/AddressSearch';
 
 function App() {
   return (
-    <div>
-      <h1>Buscador de Direcciones de Noruega</h1>
-    </div>
-  )
+    <main>
+      <AddressSearch />
+    </main>
+  );
 }
 
-export default App
+export default App;
