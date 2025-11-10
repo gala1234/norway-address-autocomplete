@@ -9,12 +9,9 @@
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "esnext",
-    "types": [],
     // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+    "lib": ["esnext"],
+    "types": ["node", "jest"],
 
     // Other Outputs
     "sourceMap": true,
@@ -33,7 +30,6 @@
     // "noFallthroughCasesInSwitch": true,
     // "noPropertyAccessFromIndexSignature": true,
 
-    // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
     "isolatedModules": true,
