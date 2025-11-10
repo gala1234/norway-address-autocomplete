@@ -3,7 +3,7 @@ import app from './app';
 
 // Mock the address service to avoid dependency on the real JSON file
 // and to control the data it returns.
-jest.mock('./addressService', () => ({
+jest.mock('./services/addressService', () => ({
   loadAndIndexAddresses: jest.fn(), // Does nothing
   searchAddresses: jest.fn(),     // We mock this to control it
 }));
