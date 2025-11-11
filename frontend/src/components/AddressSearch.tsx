@@ -64,24 +64,35 @@ export function AddressSearch() {
         onChange={(e) => setQuery(e.target.value)}
       />
 
-      {isLoading && <div className="loading">Loading...</div>}
-      {error && <div className="error">Error: {error}</div>}
+      {query.length >= 3 && (
+        <div className="results-dropdown">
+          
+          {isLoading && (
+            <div className="dropdown-message">Loading...</div>
+          )}
 
-      <ul className="results-list">
-        {results.map((address, index) => (
-          // We use 'index' as a key here, which is fine for a simple,
-          // non-mutable list. A unique ID from the data would be better.
-          <li key={index} className="result-item">
-            <span className="street">{address.street}</span>
-            <span className="location">
-              {address.postNumber} {address.city}
-            </span>
-          </li>
-        ))}
-      </ul>
+          {error && (
+            <div className="dropdown-message error">Error: {error}</div>
+          )}
 
-      {!isLoading && !error && query.length >= 3 && results.length === 0 && (
-        <div className="no-results">No results found for "{query}".</div>
+          {!isLoading && !error && results.length === 0 && (
+            <div className="dropdown-message no-results">
+              No results found for "{query}".
+            </div>
+          )}
+
+          {!isLoading && !error && results.length > 0 && (
+            <ul className="results-list">
+              {results.map((address, index) => (
+                <li key={index} className="result-item">
+                  <span className="street">{address.street}</span>
+                  <span className="location">{address.postNumber} {address.city}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+        </div>
       )}
     </div>
   );

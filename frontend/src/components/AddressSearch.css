@@ -1,49 +1,83 @@
 .search-container {
-  font-family: Arial, sans-serif;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   width: 100%;
   max-width: 500px;
-  margin: 40px auto;
+  margin: 0 auto;
+  /* El ancla para nuestro dropdown flotante */
+  position: relative;
 }
 
 .search-input {
   width: 100%;
   padding: 12px;
   font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box; /* Important for padding */
+  box-sizing: border-box;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
 }
 
-.loading, .error, .no-results {
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+/* --- EL NUEVO CONTENEDOR FLOTANTE --- */
+/* Este es el que ahora "flota" */
+.results-dropdown {
+  /* Posicionamiento */
+  position: absolute;
+  top: calc(100% + 4px); /* Justo debajo del input */
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  /* Estilo (el que antes tenía .results-list) */
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-depth);
+  
+  /* Para que no sea gigante en móvil */
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* --- Mensajes de estado (Loading, Error, No results) --- */
+/* Ahora son hijos directos del dropdown */
+.dropdown-message {
   padding: 12px;
-  margin-top: 10px;
   font-size: 14px;
+  color: var(--color-text-subtle);
 }
 
-.error {
-  color: red;
-  background-color: #ffe0e0;
-  border: 1px solid red;
-  border-radius: 4px;
+.dropdown-message.error {
+  color: #d9534f;
+  background-color: rgba(217, 83, 79, 0.1);
 }
 
-.no-results {
-  color: #555;
-}
-
+/* --- La lista de resultados --- */
+/* Ya NO es flotante, es un hijo normal */
 .results-list {
   list-style-type: none;
   padding: 0;
-  margin-top: 10px;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  margin: 0;
+  /* No necesita más estilos, el wrapper se encarga */
 }
 
 .result-item {
   padding: 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.result-item:hover {
+  background-color: rgba(128, 128, 128, 0.1);
 }
 
 .result-item:last-child {
@@ -52,11 +86,11 @@
 
 .result-item .street {
   font-weight: bold;
-  color: #333;
+  color: var(--color-text);
 }
 
 .result-item .location {
   font-size: 14px;
-  color: #777;
+  color: var(--color-text-subtle);
   margin-top: 4px;
 }
