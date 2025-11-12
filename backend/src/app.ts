@@ -16,11 +16,13 @@ app.use(cors());
 app.use(express.json());
 
 // --- Data Loading ---
-// Load and index data on server startup (asynchronously)
-loadAndIndexAddresses().catch((err) => {
-  console.error("[app] Fatal: could not initialize address index.", err);
-  process.exit(1);
-});
+const init = loadAndIndexAddresses();
+Promise
+  .resolve(init)
+  .catch((err) => {
+    console.error("[app] Fatal: could not initialize address index.", err);
+    if (process.env.NODE_ENV !== 'test') process.exit(1);
+  });
 
 // --- API Routes ---
 app.get("/", (req: Request, res: Response) => {
