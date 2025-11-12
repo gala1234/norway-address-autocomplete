@@ -2,7 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import type { Address } from "../types";
 import "./AddressSearch.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined;
+
+if (!RAW_API_BASE) {
+  throw new Error('Missing VITE_API_BASE_URL env var');
+}
+
+const API_BASE = RAW_API_BASE.replace(/\/$/, '');
 
 export function AddressSearch() {
   const [query, setQuery] = useState("");
