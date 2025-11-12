@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import type { Address } from "../types";
 import "./AddressSearch.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export function AddressSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Address[]>([]);
@@ -35,13 +37,15 @@ export function AddressSearch() {
     setHasSearched(false);
     setActiveIndex(-1);
 
-    const timerId = setTimeout(() => {
-      performSearch(query);
-    }, 300);
+    const controller = new AbortController();
+    const timerId = setTimeout(
+      () => performSearch(query, controller.signal),
+      300
+    );
 
     return () => {
       clearTimeout(timerId);
-      // controller.abort();
+      controller.abort();
     };
   }, [query]);
 
@@ -66,11 +70,10 @@ export function AddressSearch() {
     setCity("");
   };
 
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = async (searchQuery: string, signal?: AbortSignal) => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/search/${searchQuery}`
-      );
+      const url = `${API_BASE}/search/${encodeURIComponent(searchQuery)}`;
+      const response = await fetch(url, { signal });
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -151,17 +154,23 @@ export function AddressSearch() {
             }}
             onKeyDown={handleKeyDown}
             role="combobox"
-            aria-expanded
+            aria-expanded={Boolean(results.length) && !isLoading}
             aria-controls="address-listbox"
             aria-autocomplete="list"
-            aria-activedescendant={activeIndex >= 0 ? `address-item-${activeIndex}` : undefined}
+            aria-activedescendant={
+              activeIndex >= 0 ? `address-item-${activeIndex}` : undefined
+            }
           />
         </div>
       </div>
 
       {(isLoading || error || (hasSearched && query.length >= 3)) && (
         <div className="results-dropdown">
-          {isLoading && <div className="dropdown-message" aria-live="polite">Loading...</div>}
+          {isLoading && (
+            <div className="dropdown-message" aria-live="polite">
+              Loading...
+            </div>
+          )}
           {error && (
             <div className="dropdown-message error">Error: {error}</div>
           )}
