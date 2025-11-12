@@ -1,13 +1,32 @@
-.search-container {
+.form-container {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  /* El ancla para nuestro dropdown flotante */
   position: relative;
 }
 
-.search-input {
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875em;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: var(--color-text-subtle);
+}
+
+.form-input {
   width: 100%;
   padding: 12px;
   font-size: 16px;
@@ -16,37 +35,39 @@
   color: var(--color-text);
   border: 2px solid var(--color-border);
   border-radius: 8px;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.form-input.search {
+  opacity: 1;
+  cursor: text;
   transition: border-color 0.2s ease;
 }
 
-.search-input:focus {
+.form-input:focus {
+  outline: none;
+}
+
+.form-input.search:focus {
   outline: none;
   border-color: var(--color-border-focus);
 }
 
-/* --- EL NUEVO CONTENEDOR FLOTANTE --- */
-/* Este es el que ahora "flota" */
 .results-dropdown {
-  /* Posicionamiento */
   position: absolute;
-  top: calc(100% + 4px); /* Justo debajo del input */
   left: 0;
   right: 0;
   z-index: 100;
-
-  /* Estilo (el que antes tenía .results-list) */
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: var(--shadow-depth);
-  
-  /* Para que no sea gigante en móvil */
   max-height: 400px;
   overflow-y: auto;
 }
 
-/* --- Mensajes de estado (Loading, Error, No results) --- */
-/* Ahora son hijos directos del dropdown */
+
 .dropdown-message {
   padding: 12px;
   font-size: 14px;
@@ -58,13 +79,10 @@
   background-color: rgba(217, 83, 79, 0.1);
 }
 
-/* --- La lista de resultados --- */
-/* Ya NO es flotante, es un hijo normal */
 .results-list {
   list-style-type: none;
   padding: 0;
   margin: 0;
-  /* No necesita más estilos, el wrapper se encarga */
 }
 
 .result-item {
@@ -76,8 +94,9 @@
   transition: background-color 0.15s ease;
 }
 
-.result-item:hover {
-  background-color: rgba(128, 128, 128, 0.1);
+.result-item:hover,
+.result-item.active {
+  background-color: rgba(128, 128, 128, 0.2);
 }
 
 .result-item:last-child {
