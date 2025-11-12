@@ -41,6 +41,7 @@ export function AddressSearch() {
 
     return () => {
       clearTimeout(timerId);
+      // controller.abort();
     };
   }, [query]);
 
@@ -149,24 +150,34 @@ export function AddressSearch() {
               setCity("");
             }}
             onKeyDown={handleKeyDown}
+            role="combobox"
+            aria-expanded
+            aria-controls="address-listbox"
+            aria-autocomplete="list"
+            aria-activedescendant={activeIndex >= 0 ? `address-item-${activeIndex}` : undefined}
           />
         </div>
       </div>
 
       {(isLoading || error || (hasSearched && query.length >= 3)) && (
         <div className="results-dropdown">
-          {isLoading && <div className="dropdown-message">Loading...</div>}
+          {isLoading && <div className="dropdown-message" aria-live="polite">Loading...</div>}
           {error && (
             <div className="dropdown-message error">Error: {error}</div>
           )}
           {!isLoading && !error && hasSearched && results.length === 0 && (
-            <div className="dropdown-message no-results">
+            <div className="dropdown-message no-results" aria-live="polite">
               No results found for "{query}".
             </div>
           )}
 
           {!isLoading && !error && results.length > 0 && (
-            <ul className="results-list" ref={listRef}>
+            <ul
+              className="results-list"
+              ref={listRef}
+              role="listbox"
+              id="address-listbox"
+            >
               {results.map((address, index) => (
                 <li
                   key={`${address.postNumber}-${address.street}`}
@@ -174,6 +185,8 @@ export function AddressSearch() {
                     index === activeIndex ? "active" : ""
                   }`}
                   onClick={() => handleSelect(address)}
+                  role="option"
+                  aria-selected={index === activeIndex}
                 >
                   <span className="street">{address.street}</span>
                   <span className="location">
@@ -184,7 +197,7 @@ export function AddressSearch() {
             </ul>
           )}
         </div>
-      )}  
+      )}
 
       <div className="form-row">
         <div className="form-group">
@@ -194,7 +207,7 @@ export function AddressSearch() {
           <input
             type="text"
             id="postNumber"
-            className="form-input"
+            className="form-input read-only"
             value={postNumber}
             readOnly
           />
@@ -206,7 +219,7 @@ export function AddressSearch() {
           <input
             type="text"
             id="city"
-            className="form-input"
+            className="form-input read-only"
             value={city}
             readOnly
           />

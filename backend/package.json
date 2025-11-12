@@ -1,20 +1,21 @@
 {
-  "name": "backend",
+  "name": "norway-address-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "commonjs",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "jest"
+    "dev": "ts-node src/index.ts",
+    "test": "jest --passWithNoTests"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Galadriel Calero",
   "license": "ISC",
-  "type": "commonjs",
+  "engines": { "node": ">=18.x" },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "trie-search": "^2.2.0"
   },

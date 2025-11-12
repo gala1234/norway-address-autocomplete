@@ -1,54 +1,62 @@
-import TrieSearch from 'trie-search';
-import fs from 'fs';
-import path from 'path';
+import TrieSearch from "trie-search";
+import path from "path";
+import { promises as fs } from "fs";
+import type { Address, SearchPayload } from "../types";
 
-// 1. Define the structure of an address object
-export interface Address {
-  street: string;
-  postNumber: number;
-  city: string;
-  county: string;
-  district: string;
-  municipality: string;
-  municipalityNumber: number;
-  type: string;
-  typeCode: number;
+const trie = new TrieSearch<Address>("street", {
+  ignoreCase: true,
+  min: 3,
+});
+
+// Data path resolution
+export function resolveDataPath(): string {
+  const envPath = process.env.DATA_PATH;
+
+  if (envPath && path.isAbsolute(envPath)) return envPath;
+  if (envPath) return path.resolve(process.cwd(), envPath);
+
+  return path.resolve(process.cwd(), "data", "addresses.json");
 }
 
-// 2. Create an instance of TrieSearch
-const trie = new TrieSearch<Address>(
-  'street',
-  {
-    ignoreCase: true,
-    min: 3, 
-  }
-);
+export async function loadAndIndexAddresses(): Promise<void> {
+  const dataPath = resolveDataPath();
 
-// 3. Function to load and index the data
-export function loadAndIndexAddresses() {
   try {
-    console.log('Loading address data...');
-    
-    // Path: From 'dist' (where code runs), go up to 'backend', then into 'data'
-    const dataPath = path.join(__dirname, '../..', 'data', 'adresses.json');
-    
-    const rawData = fs.readFileSync(dataPath, 'utf-8');
-    const addresses: Address[] = JSON.parse(rawData);
+    console.log(`[addressService] Loading address data from: ${dataPath}`);
+    const raw = await fs.readFile(dataPath, "utf-8");
 
+    // Basic JSON validation
+    let addresses: Address[];
+
+    try {
+      addresses = JSON.parse(raw);
+    } catch (e: any) {
+      throw new Error(`Invalid JSON at ${dataPath}: ${e?.message ?? e}`);
+    }
+
+    // Rebuild trie
+    if (typeof (trie as any).clear === "function") (trie as any).clear();
     trie.addAll(addresses);
 
-    console.log(`Successfully indexed ${addresses.length} addresses.`);
-    
-  } catch (error) {
-    console.error('Failed to load or index address data:', error);
-    process.exit(1); 
+    console.log(`[addressService] Indexed ${addresses.length} addresses`);
+
+  } catch (err: any) {
+    console.error(
+      `[addressService] Failed to load or index data from ${dataPath}: ${
+        err?.message ?? err
+      }`
+    );
+    console.error(
+      "[addressService] Hint: set DATA_PATH env var or place data/addresses.json under the project root."
+    );
+    throw err;
   }
 }
 
-// 4. Function to execute the search
-export function searchAddresses(query: string): Address[] {
-  const results = trie.get(query);
-  
-  // Return only the first 20 results
-  return results.slice(0, 20);
+export function searchAddressesWithMeta(
+  query: string,
+  limit = 20
+): SearchPayload {
+  const all = trie.get(query);
+  return { items: all.slice(0, limit), total: all.length, limit };
 }
