@@ -44,7 +44,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./frontend # Important!
+        working-directory: ./frontend
 
     steps:
       - name: Checkout code

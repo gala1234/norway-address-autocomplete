@@ -1,141 +1,30 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useCallback } from "react";
 import type { Address } from "../types";
+import { useAddressSearch } from "../hooks/useAddressSearch";
 import "./AddressSearch.css";
 
-const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined;
-
-if (!RAW_API_BASE) {
-  throw new Error("Missing VITE_API_BASE_URL env var");
-}
-
-const API_BASE = RAW_API_BASE.replace(/\/$/, "");
-
 export function AddressSearch() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Address[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [hasSearched, setHasSearched] = useState(false);
-
+  // Read only fields state
   const [postNumber, setPostNumber] = useState("");
   const [city, setCity] = useState("");
 
-  const selectionRef = useRef(false);
-  const listRef = useRef<HTMLUListElement>(null);
-
-  useEffect(() => {
-    setError(null);
-
-    if (selectionRef.current) {
-      selectionRef.current = false;
-      setHasSearched(false);
-      return;
-    }
-
-    if (query.length < 3) {
-      cleanup();
-      setHasSearched(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setHasSearched(false);
-    setActiveIndex(-1);
-
-    const controller = new AbortController();
-    const timerId = setTimeout(
-      () => performSearch(query, controller.signal),
-      300
-    );
-
-    return () => {
-      clearTimeout(timerId);
-      controller.abort();
-    };
-  }, [query]);
-
-  useEffect(() => {
-    if (activeIndex < 0 || !listRef.current) {
-      return;
-    }
-    const activeItem = listRef.current.children[activeIndex] as HTMLLIElement;
-    if (activeItem) {
-      activeItem.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [activeIndex]);
-
-  const cleanup = () => {
-    setResults([]);
-    setIsLoading(false);
-    setActiveIndex(-1);
-    setPostNumber("");
-    setCity("");
-  };
-
-  const performSearch = async (searchQuery: string, signal?: AbortSignal) => {
-    try {
-      const url = `${API_BASE}/search/${encodeURIComponent(searchQuery)}`;
-      const response = await fetch(url, { signal });
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const data: Address[] = await response.json();
-      setResults(data);
-    } catch (e) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("An unknown error occurred.");
-      }
-      setResults([]);
-      setActiveIndex(-1);
-    } finally {
-      setIsLoading(false);
-      setHasSearched(true);
-    }
-  };
-
-  const handleSelect = (address: Address) => {
-    selectionRef.current = true;
-    setHasSearched(false);
-
-    setQuery(address.street);
+  // Callback when an address is selected
+  const handleSelectAddress = useCallback((address: Address) => {
     setPostNumber(String(address.postNumber));
     setCity(address.city);
+  }, []);
 
-    setResults([]);
-    setActiveIndex(-1);
-  };
+  // Hook for address search
+  const { state, listRef, handleQueryChange, handleKeyDown, handleSelect } =
+    useAddressSearch(handleSelectAddress);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setActiveIndex((prevIndex) =>
-          prevIndex >= results.length - 1 ? 0 : prevIndex + 1
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setActiveIndex((prevIndex) =>
-          prevIndex <= 0 ? results.length - 1 : prevIndex - 1
-        );
-        break;
-      case "Enter":
-        if (activeIndex >= 0) {
-          e.preventDefault();
-          handleSelect(results[activeIndex]);
-        }
-        break;
-      case "Escape":
-        setResults([]);
-        setActiveIndex(-1);
-        break;
+  // Clear the form if the user deletes the search input
+  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length === 0) {
+      setPostNumber("");
+      setCity("");
     }
+    handleQueryChange(e);
   };
 
   return (
@@ -151,57 +40,60 @@ export function AddressSearch() {
             id="address-search"
             className="form-input search"
             placeholder="Start typing an address (e.g., 'rod')..."
-            value={query}
-            onChange={(e) => {
-              selectionRef.current = false;
-              setQuery(e.target.value);
-              setPostNumber("");
-              setCity("");
-            }}
+            value={state.query}
+            onChange={onQueryChange}
             onKeyDown={handleKeyDown}
             role="combobox"
-            aria-expanded={Boolean(results.length) && !isLoading}
+            aria-expanded={Boolean(state.results.length) && !state.isLoading}
             aria-controls="address-listbox"
             aria-autocomplete="list"
             aria-activedescendant={
-              activeIndex >= 0 ? `address-item-${activeIndex}` : undefined
+              state.activeIndex >= 0
+                ? `address-item-${state.activeIndex}`
+                : undefined
             }
           />
         </div>
       </div>
 
-      {(isLoading || error || (hasSearched && query.length >= 3)) && (
+      {(state.isLoading ||
+        state.error ||
+        (state.hasSearched && state.query.length >= 3)) && (
         <div className="results-dropdown">
-          {isLoading && (
+          {state.isLoading && (
             <div className="dropdown-message" aria-live="polite">
               Loading...
             </div>
           )}
-          {error && (
-            <div className="dropdown-message error">Error: {error}</div>
+          {state.error && (
+            <div className="dropdown-message error">Error: {state.error}</div>
           )}
-          {!isLoading && !error && hasSearched && results.length === 0 && (
-            <div className="dropdown-message no-results" aria-live="polite">
-              No results found for "{query}".
-            </div>
-          )}
+          {!state.isLoading &&
+            !state.error &&
+            state.hasSearched &&
+            state.results.length === 0 && (
+              <div className="dropdown-message no-results" aria-live="polite">
+                No results found for "{state.query}".
+              </div>
+            )}
 
-          {!isLoading && !error && results.length > 0 && (
+          {!state.isLoading && !state.error && state.results.length > 0 && (
             <ul
               className="results-list"
               ref={listRef}
               role="listbox"
               id="address-listbox"
             >
-              {results.map((address, index) => (
+              {state.results.map((address, index) => (
                 <li
                   key={`${address.postNumber}-${address.street}`}
                   className={`result-item ${
-                    index === activeIndex ? "active" : ""
+                    index === state.activeIndex ? "active" : ""
                   }`}
                   onClick={() => handleSelect(address)}
                   role="option"
-                  aria-selected={index === activeIndex}
+                  aria-selected={index === state.activeIndex}
+                  id={`address-item-${index}`}
                 >
                   <span className="street">{address.street}</span>
                   <span className="location">
