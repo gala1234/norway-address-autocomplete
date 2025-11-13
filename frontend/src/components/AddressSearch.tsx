@@ -5,10 +5,10 @@ import "./AddressSearch.css";
 const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
 if (!RAW_API_BASE) {
-  throw new Error('Missing VITE_API_BASE_URL env var');
+  throw new Error("Missing VITE_API_BASE_URL env var");
 }
 
-const API_BASE = RAW_API_BASE.replace(/\/$/, '');
+const API_BASE = RAW_API_BASE.replace(/\/$/, "");
 
 export function AddressSearch() {
   const [query, setQuery] = useState("");

@@ -1,0 +1,64 @@
+name: Node.js CI
+
+# 1. When it should run
+on:
+  # Runs on 'push' to the main branch
+  push:
+    branches: [ "main", "master" ]
+  # Runs on 'pull requests' against the main branch
+  pull_request:
+    branches: [ "main", "master" ]
+
+# 2. What jobs should be done
+jobs:
+
+  # --- JOB 1: TEST THE BACKEND ---
+  test-backend:
+    runs-on: ubuntu-latest # Use a Linux virtual machine
+    
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Download your code
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  # --- JOB 2: BUILD THE FRONTEND ---
+  # (This doesn't run tests, but checks that the code has no TypeScript errors)
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend # Important!
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project (type-check)
+        run: npm run build
